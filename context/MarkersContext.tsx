@@ -1,16 +1,7 @@
 // context/MarkersContext.tsx
 import React, { createContext, ReactNode, useContext, useState } from 'react';
-import { MarkerImage, MarkerMap } from '../types';
+import { MarkerImage, MarkerMap, MarkersContextType } from '../types';
 
-interface MarkersContextType {
-  markers: MarkerMap[];
-  markerImages: MarkerImage[]; 
-  addMarker: (marker: MarkerMap) => void;
-  addMarkerImage: (image: MarkerImage) => void;
-  deleteMarker: (marker: MarkerMap) => void;
-  deleteMarkerImage: (imageId: string) => void;
-  updateMarker: (markerId: string, updates: Partial<MarkerMap>) => void;
-}
 
 type MarkersProviderProps = {
   children: ReactNode;

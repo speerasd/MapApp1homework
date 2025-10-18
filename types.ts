@@ -16,18 +16,12 @@ export interface MarkerImage {
     height?: number;
 }
 
-export type RootStackParamList = {
-    index: undefined;
-    marker: { id: string }
-}
-
-export type ImagePickerError = {
-    code: string;
-    message: string;
-    domain?: string;
-}
-
-export type MapError = {
-    message: string;
-    type: 'loading' | 'permission' | 'unknown'; 
+export interface MarkersContextType {
+  markers: MarkerMap[];
+  markerImages: MarkerImage[]; 
+  addMarker: (marker: MarkerMap) => void;
+  addMarkerImage: (image: MarkerImage) => void;
+  deleteMarker: (marker: MarkerMap) => void;
+  deleteMarkerImage: (imageId: string) => void;
+  updateMarker: (markerId: string, updates: Partial<MarkerMap>) => void;
 }

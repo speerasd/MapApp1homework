@@ -18,7 +18,6 @@ export default function MarkerDetail() {
   useEffect(() => {
     const foundMarker = markers.find(m => m.id === id);
     setMarker(foundMarker || null);
-    
   }, [id, markers])
 
   const handleAddImage = useCallback(async () => {
@@ -168,18 +167,5 @@ const styles = StyleSheet.create({
     color: '#FF3B30',
     textAlign: 'center',
     marginVertical: 20,
-  },
-  errorBox: {
-    backgroundColor: '#FF6B6B',
-    padding: 12,
-    margin: 10,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-    closeText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 })

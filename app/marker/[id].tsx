@@ -32,7 +32,7 @@ export default function MarkerDetail() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
@@ -58,6 +58,7 @@ export default function MarkerDetail() {
       setLoading(false);
     }
   }, [id]);
+  
   const handleDeleteImage = useCallback((imageId: string) => {
     deleteMarkerImage(imageId);
   }, [deleteMarkerImage])
@@ -103,7 +104,7 @@ export default function MarkerDetail() {
           />
         </View>
         <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backButtonText}>Назад к карте</Text>
+          <Text style={styles.backButtonText}>Назад</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

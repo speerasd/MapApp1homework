@@ -6,7 +6,7 @@ type Props = {
     markers: MarkerMap[];
     onMarkerPress: (marker: MarkerMap) => void;
     onMarkerDelete?: (marker: MarkerMap) => void;
-    onMarkerEdit?:(markerId: string, newTitle: string, newDescription: string) => void;
+    onMarkerEdit?:(markerId: number, newTitle: string, newDescription: string) => void;
     emptyText?: string;
 }
 
@@ -22,7 +22,7 @@ export default function MarkerListComponent({markers, onMarkerPress, onMarkerDel
             </View>
         );
     };
-    const formatDate = (date: Date) => {
+    const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('ru-RU', {
             day: 'numeric',
             month: 'short',

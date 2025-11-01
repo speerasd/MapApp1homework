@@ -14,7 +14,7 @@ type Props = {
 export default function MapComponent({region, markers, onRegionChangeComplete, onLongPress, onMarkerSelect }: Props) {
     let handleNativeMarkerPress = (event: MarkerPressEvent) => {
         let markerId = event.nativeEvent.id;
-        let marker = markers.find(m => m.id === markerId)
+        let marker = markers.find(m => m.id.toString() === markerId)
         if (marker) {
             onMarkerSelect(marker)
         }
@@ -39,7 +39,7 @@ export default function MapComponent({region, markers, onRegionChangeComplete, o
         {markers.map(marker => (
             <Marker 
                 key={marker.id}
-                identifier={marker.id}
+                identifier={marker.id.toString()}
                 coordinate={{
                     latitude: marker.latitude,
                     longitude: marker.longitude,

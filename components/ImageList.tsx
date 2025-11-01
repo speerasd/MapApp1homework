@@ -3,14 +3,14 @@ import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } fr
 
 type Props = {
     images: MarkerImage[];
-    onImageDelete: (ImageId: string) => void;
+    onImageDelete: (ImageId: number) => void;
     onAddImage?: () => void;
     loading: boolean;
     emptyText?: string;
 }
 
 export default function ImageListComponent({images, onImageDelete, onAddImage, loading = false, emptyText = "Нет добавленных изображений"}: Props) {
-    const handleDeletePress = (imageId: string) => {
+    const handleDeletePress = (imageId: number) => {
         Alert.alert(
             'Удалить изображение',
             'Вы уверены, что хотите удалить изображение',
@@ -27,7 +27,7 @@ export default function ImageListComponent({images, onImageDelete, onAddImage, l
             ]
         );
     };
-    const formatDate = (date: Date) => {
+    const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('ru-RU', {
             day: 'numeric',
             month: 'short',

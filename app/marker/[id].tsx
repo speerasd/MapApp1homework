@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import ImageList from '../../components/ImageList';
-import { useMarkers } from '../../context/MarkersContext';
+import { useDatabase } from '../../context/DatabaseContext';
 import { MarkerImage, MarkerMap } from '../../types';
 
 export default function MarkerDetail() {
@@ -11,14 +11,33 @@ export default function MarkerDetail() {
   const router = useRouter();
   const [marker, setMarker] = useState<MarkerMap | null>(null)
   const [loading, setLoading] = useState(false)
-  const { markers, markerImages, addMarkerImage, deleteMarkerImage } = useMarkers();
-
-  const currentMarkerImages = markerImages.filter(img => img.markerId === id);
+  const { addMarkerImage, deleteMarkerImage, getMarkers, getMarkerImages } = useDatabase();
+  const [markerImages, setMarkerImages] = useState<MarkerImage[]>([])
 
   useEffect(() => {
-    const foundMarker = markers.find(m => m.id === id);
-    setMarker(foundMarker || null);
-  }, [id, markers])
+    loadMarkerData();
+  }, [id]);
+
+  const loadMarkerData = async () => {
+    try {
+      setLoading(true);
+      
+      const allMarkers = await getMarkers();
+      const foundMarker = allMarkers.find(m => m.id === parseInt(id as string));
+      setMarker(foundMarker || null);
+      
+      if (foundMarker) {
+        const images = await getMarkerImages(foundMarker.id);
+        setMarkerImages(images);
+      }
+      
+    } catch (error) {
+      console.error('Ошибка при загрзуке данных маркера:', error);
+      Alert.alert('Ошибка', 'Не удалось загрузить данные маркера');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAddImage = useCallback(async () => {
     try {
@@ -38,16 +57,16 @@ export default function MarkerDetail() {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        let newImage: MarkerImage = {
-          id: Date.now().toString(),
+        let newImageData = {
           uri: result.assets[0].uri,
-          markerId: id as string,
-          createAt: new Date(),
+          markerId: parseInt(id as string),
           width: result.assets[0].width,
           height: result.assets[0].height
         };
 
-        addMarkerImage(newImage);
+        await addMarkerImage(newImageData);
+        
+        await loadMarkerData();
       }
     }
     catch (error) {
@@ -58,9 +77,17 @@ export default function MarkerDetail() {
     }
   }, [id]);
   
-  const handleDeleteImage = useCallback((imageId: string) => {
-    deleteMarkerImage(imageId);
-  }, [deleteMarkerImage])
+  const handleDeleteImage = useCallback(async (imageId: number) => {
+    try {
+      await deleteMarkerImage(imageId);
+      
+      setMarkerImages(prev => prev.filter(img => img.id !== imageId));
+      
+    } catch (error) {
+      console.error('Ошибка при удалении изображения:', error);
+      Alert.alert('Ошибка', 'Не удалось удалить изображение');
+    }
+  }, [deleteMarkerImage]);
   
   const handleBack = useCallback(() => {
     router.back();
@@ -95,7 +122,7 @@ export default function MarkerDetail() {
 
         <View style={styles.imagesSection}>
           <ImageList
-            images={currentMarkerImages}
+            images={markerImages}
             onImageDelete={handleDeleteImage}
             onAddImage={handleAddImage}
             loading={loading}

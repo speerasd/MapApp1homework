@@ -1,7 +1,7 @@
-import { useMarkers } from "@/context/MarkersContext";
+import { useDatabase } from "@/context/DatabaseContext";
 import { MarkerMap } from "@/types";
 import { useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Region } from "react-native-maps";
 
@@ -10,8 +10,9 @@ import MarkerListComponent from "@/components/MarkerList";
 
 export default function Index() {
   const router = useRouter();
-  const { markers, addMarker, deleteMarker, updateMarker } = useMarkers();
+  const { addMarker, deleteMarker, updateMarker, getMarkers, isDBReady } = useDatabase();
   const [showList, setShowList] = useState(false);
+  const [markers, setMarkers] = useState<MarkerMap[]>([]);
 
   let [region, setRegion] = useState<Region>({
     latitude: 55.7558,
@@ -20,8 +21,23 @@ export default function Index() {
     longitudeDelta: 0.0421,
   });
 
+  useEffect(() => {
+    if (isDBReady) {
+      loadMarkers();
+    }
+  }, [isDBReady]);
 
-  const handleLongPress = useCallback((event:any) => {
+  const loadMarkers = async () => {
+    try {
+      const markersData = await getMarkers();
+      setMarkers(markersData);
+    } catch (error) {
+      console.error('Ошибка загрузки маркеров:', error);
+    }
+  };
+
+
+  const handleLongPress = useCallback((event: any) => {
     let { coordinate } = event.nativeEvent;
     Alert.alert(
       'Добавить маркер',
@@ -33,21 +49,28 @@ export default function Index() {
         },
         {
           text: 'Добавить',
-          onPress: () => {
-            const newMarker: MarkerMap = {
-              id: Date.now().toString(),
-              latitude: coordinate.latitude,
-              longitude: coordinate.longitude,
-              title: `Маркер ${markers.length + 1}`,
-              description: `Описание маркера ${markers.length + 1}`,
-              createAt: new Date(),
-            };
-            addMarker(newMarker);
+          onPress: async () => {
+            try {
+              const newMarkerData = {
+                latitude: coordinate.latitude,
+                longitude: coordinate.longitude,
+                title: `Маркер ${markers.length + 1}`,
+                description: `Описание маркера ${markers.length + 1}`,
+              };
+              
+              await addMarker(newMarkerData);
+              
+              await loadMarkers();
+              
+            } catch (error) {
+              Alert.alert('Ошибка', 'Не удалось добавить маркер');
+              console.error('Ошибка при добавлении маркера:', error);
+            }
           },
         },
       ]
     );
-  },[markers.length]);
+  }, [markers.length, addMarker]);
 
   const handleMarkerDelete = useCallback((marker: MarkerMap) => {
     Alert.alert(
@@ -61,12 +84,22 @@ export default function Index() {
         {
           text: 'Удалить',
           style: 'destructive',
-          onPress: () => deleteMarker(marker),
+          onPress: async () => {
+            try {
+              await deleteMarker(marker.id);
+              
+              await loadMarkers();
+              
+            } catch (error) {
+              Alert.alert('Ошибка', 'Не удалось удалить маркер');
+              console.error('Ошибка при удалении маркера:', error);
+            }
+          },
         },
       ]
     );
   }, [deleteMarker]);
-
+  
   const toggleView = () => {
     setShowList(!showList);
   };
@@ -80,8 +113,16 @@ export default function Index() {
     }
   }, [router]);
 
-  const handleMarkerEdit = useCallback((markerId: string, newTitle: string, newDescription: string) => {
-    updateMarker(markerId, { title: newTitle, description: newDescription });
+  const handleMarkerEdit = useCallback(async (markerId: number, newTitle: string, newDescription: string) => {
+    try {
+      await updateMarker(markerId, { title: newTitle, description: newDescription });
+      
+      await loadMarkers();
+      
+    } catch (error) {
+      Alert.alert('Ошибка', 'Не удалось обновить маркер');
+      console.error('Ошибка при обновлении маркера:', error);
+    }
   }, [updateMarker]);
 
 

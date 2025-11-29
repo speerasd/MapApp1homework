@@ -47,7 +47,7 @@
 1. Клонируйте репозиторий
 
    ```bash
-   git clone <repository-url>
+   git clone .../MapApp1homework.git
    cd MapApp
 
    ```

@@ -11,12 +11,37 @@ class DatabaseOperations {
 
             this.db.execSync(DatabaseSchema.tables.markers);
             this.db.execSync(DatabaseSchema.tables.marker_images);
+
+            await this.checkAndRunMigrations();
             
             console.log('База проинициализирована');
         }
         catch (error) {
             console.error('Ошибка при инициализации:', error)
             throw error
+        }
+    }
+
+    private async checkAndRunMigrations(): Promise<void> {
+        try {
+            const tableInfo = await this.db!.getFirstAsync<{name: string}>(
+                "PRAGMA table_info(markers)"
+            );
+            
+            const columns = await this.db!.getAllAsync<{name: string}>(
+                "PRAGMA table_info(markers)"
+            );
+
+            const hasNotificationRadius = columns.some(col => col.name === 'notificationRadius');
+
+            if (!hasNotificationRadius) {
+                console.log('Выполняем миграцию...');
+                this.db!.execSync(DatabaseSchema.migrations['1_to_2']);
+                console.log('Миграция завершена');
+            }
+        }
+        catch (error) {
+            console.log('Миграция не требуется или уже выполнена');
         }
     }
 
@@ -30,8 +55,8 @@ class DatabaseOperations {
     async addMarker(marker: Omit<MarkerMap, 'id' | 'createAt'>): Promise<number> {
         return new Promise((resolve, reject) => {
             this.getDatabase().runAsync(
-                `INSERT INTO markers (latitude, longitude, title, description) VALUES (?, ?, ?, ?)`,
-                [marker.latitude, marker.longitude, marker.title, marker.description || null]
+                `INSERT INTO markers (latitude, longitude, title, description, notificationRadius) VALUES (?, ?, ?, ?, ?)`,
+                [marker.latitude, marker.longitude, marker.title, marker.description || null, marker.notificationRadius || 100]
             ).then(result => {
                 resolve(result.lastInsertRowId as number);
             }).catch(reject);
@@ -78,6 +103,11 @@ class DatabaseOperations {
         if(updates.description !== undefined) {
             fields.push('description = ?');
             values.push(updates.description);
+        }
+
+        if(updates.notificationRadius != undefined) {
+            fields.push('notification_radius = ?');
+            values.push(updates.notificationRadius);
         }
 
         if(fields.length === 0) return;

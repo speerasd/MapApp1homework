@@ -1,3 +1,5 @@
+import * as Location from 'expo-location';
+
 export interface MarkerMap {
     id: number;
     latitude: number;
@@ -5,6 +7,7 @@ export interface MarkerMap {
     title: string;
     description?: string;
     createAt: string;
+    notificationRadius: number;
 }
 
 export interface MarkerImage {
@@ -14,6 +17,24 @@ export interface MarkerImage {
     createAt: string;
     width?: number;
     height?: number;
+}
+
+export interface MarkerNotification {
+  id: number;
+  markerId: number;
+  notificationId: string;
+  shownAt: string;
+}
+
+export interface LocationState {
+  location: Location.LocationObject | null;
+  errorMsg: string | null;
+}
+
+export interface LocationConfig {
+  accuracy: Location.LocationAccuracy;
+  timeInterval: number;
+  distanceInterval: number;
 }
 
 // export interface MarkersContextType {

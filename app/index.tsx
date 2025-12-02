@@ -8,11 +8,17 @@ import { Region } from "react-native-maps";
 import MapComponent from "@/components/Map";
 import MarkerListComponent from "@/components/MarkerList";
 
+import { useLocationTracking } from '@/hooks/useLocationTracking'; //hook
+import { notificationManager } from '@/services/notifications';
+
 export default function Index() {
   const router = useRouter();
   const { addMarker, deleteMarker, updateMarker, getMarkers, isDBReady } = useDatabase();
   const [showList, setShowList] = useState(false);
   const [markers, setMarkers] = useState<MarkerMap[]>([]);
+  const [hasCentered, setHasCentered] = useState(false);
+
+  const { location, error } = useLocationTracking();
 
   let [region, setRegion] = useState<Region>({
     latitude: 55.7558,
@@ -20,6 +26,30 @@ export default function Index() {
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   });
+
+  useEffect(() => {
+    if (location && !hasCentered) {
+      console.log('Центрируем на локации пользователя');
+      setRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+      setHasCentered(true);
+    }
+  }, [location, hasCentered]);
+
+  const focusOnUserLocation = () => {
+    if (location) {
+      setRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+    }
+  };
 
   useEffect(() => {
     if (isDBReady) {
@@ -56,6 +86,7 @@ export default function Index() {
                 longitude: coordinate.longitude,
                 title: `Маркер ${markers.length + 1}`,
                 description: `Описание маркера ${markers.length + 1}`,
+                notificationRadius: 100,
               };
               
               await addMarker(newMarkerData);
@@ -86,6 +117,8 @@ export default function Index() {
           style: 'destructive',
           onPress: async () => {
             try {
+              await notificationManager.removeNotification(marker.id);
+
               await deleteMarker(marker.id);
               
               await loadMarkers();
@@ -135,6 +168,7 @@ export default function Index() {
           markers={markers}
           onLongPress={handleLongPress}
           onMarkerSelect={handleMarkerPress}
+          onFocusLocation={focusOnUserLocation}
         />
       ) : (
         <MarkerListComponent

@@ -1,6 +1,6 @@
 
 export const DatabaseSchema = {
-    version: 1,
+    version: 2,
 
     tables: {
         markers:`
@@ -22,6 +22,12 @@ export const DatabaseSchema = {
                 width INTEGER,
                 height INTEGER
             )
+        `
+    },
+    
+    migrations: {
+        '1_to_2': `
+            ALTER TABLE markers ADD COLUMN notificationRadius INTEGER DEFAULT 100;
         `
     }
 }

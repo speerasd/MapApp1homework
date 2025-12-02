@@ -76,7 +76,7 @@ export default function MarkersProvider({ children }: DatabaseProviderProps) {
     isLoading,
     error,
     isDBReady,
-    initializeDB,
+    initializeDB
   };
 
   return (
